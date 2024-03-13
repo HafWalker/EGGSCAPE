@@ -12,10 +12,9 @@ GameObject:
   - component: {fileID: 1037189235143172548}
   - component: {fileID: 6916709713761596057}
   - component: {fileID: 3980068619804332848}
-  - component: {fileID: 4530954805156103708}
+  - component: {fileID: 1109526076392650510}
   - component: {fileID: 4602132327140274403}
   - component: {fileID: 1234698983780493359}
-  - component: {fileID: 1109526076392650510}
   m_Layer: 5
   m_Name: Player
   m_TagString: Player
@@ -132,11 +131,12 @@ MonoBehaviour:
   _addedNetworkObject: {fileID: 1234698983780493359}
   _networkObjectCache: {fileID: 1234698983780493359}
   movementSpeed: 7.5
-  health: {fileID: 4530954805156103708}
-  currentWeapon: {fileID: 3581571516911842475}
+  currentHealth: 0
+  maxHealt: 10
+  healthBar: {fileID: 1116626087018607970}
+  sword: {fileID: 3581571516911842475}
   body: {fileID: 2401080283664738011}
-  playerName: {fileID: 0}
---- !u!114 &4530954805156103708
+--- !u!114 &1109526076392650510
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -145,12 +145,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 951634808344740093}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f09904c8c6f6f6a4b9283b1ac8aeedd3, type: 3}
+  m_Script: {fileID: 11500000, guid: 5e548a6860b169841a6236f97454040d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealt: 10
-  currentHealth: 0
-  healthBar: {fileID: 1116626087018607970}
+  _componentIndexCache: 1
+  _addedNetworkObject: {fileID: 1234698983780493359}
+  _networkObjectCache: {fileID: 1234698983780493359}
 --- !u!114 &4602132327140274403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -163,7 +163,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2836e36774ca1c4bbbee976e17b649c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _componentIndexCache: 1
+  _componentIndexCache: 2
   _addedNetworkObject: {fileID: 1234698983780493359}
   _networkObjectCache: {fileID: 1234698983780493359}
   _componentConfiguration: 0
@@ -213,8 +213,9 @@ MonoBehaviour:
   <PredictedSpawn>k__BackingField: {fileID: 0}
   _networkBehaviours:
   - {fileID: 3980068619804332848}
-  - {fileID: 4602132327140274403}
   - {fileID: 1109526076392650510}
+  - {fileID: 4602132327140274403}
+  - {fileID: 0}
   <ParentNetworkObject>k__BackingField: {fileID: 0}
   <ChildNetworkObjects>k__BackingField: []
   SerializedTransformProperties:
@@ -231,21 +232,6 @@ MonoBehaviour:
   _scenePathHash: 0
   <SceneId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 7807759643866311769
---- !u!114 &1109526076392650510
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 951634808344740093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5e548a6860b169841a6236f97454040d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _componentIndexCache: 2
-  _addedNetworkObject: {fileID: 1234698983780493359}
-  _networkObjectCache: {fileID: 1234698983780493359}
 --- !u!1 &1229196143310891256
 GameObject:
   m_ObjectHideFlags: 0
@@ -444,7 +430,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8ef26c73d2ac9c54faa3e6af0c8d51d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weapon: {fileID: 3581571516911842475}
+  sword: {fileID: 3581571516911842475}
 --- !u!1 &3702655153942057149
 GameObject:
   m_ObjectHideFlags: 0
@@ -692,7 +678,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5194319119018799141}
   - component: {fileID: 3581571516911842475}
-  - component: {fileID: 8372415097965243927}
+  - component: {fileID: 3266866849603399075}
   m_Layer: 5
   m_Name: Sword_Weapon
   m_TagString: Untagged
@@ -732,8 +718,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a27b9940bd4058d49b6b164663fa37b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 8372415097965243927}
---- !u!95 &8372415097965243927
+  damage: 2
+  attackSpeed: -100
+  debugAngle: 0
+  isAttacking: 0
+  animator: {fileID: 3266866849603399075}
+--- !u!95 &3266866849603399075
 Animator:
   serializedVersion: 5
   m_ObjectHideFlags: 0
