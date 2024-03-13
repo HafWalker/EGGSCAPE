@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class OnCollisionCall : MonoBehaviour
 {
-    public Weapon weapon;
+    public WeaponSword sword;
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        weapon.OnCollision(collision);
+        sword.OnCollision(collision);
     }
 }

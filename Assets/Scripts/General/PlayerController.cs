@@ -5,34 +5,43 @@ using UnityEngine;
 using FishNet.Connection;
 using FishNet.Object;
 using System;
+using FishNet.Object.Synchronizing;
+using System.Transactions;
 
 public class PlayerController : NetworkBehaviour, IDamageable
 {
-    public float movementSpeed = 1;
+    [SerializeField] private float movementSpeed = 1;
 
-    public Health health;
-    public Weapon currentWeapon;
+    #region HEALTH
+    
+    [SyncVar] public float currentHealth;
+    [SerializeField] private float maxHealt = 10f;
+    [SerializeField] private HealthBar healthBar;
 
+    #endregion
+
+    public WeaponSword sword;
     public Transform body;
 
-    private bool isLocalPlayer = true;
+    private bool _isOwner = true;
+    private bool _isReady = true;
 
     private PlayerNetworkSync playerNetworkSync;
 
     public override void OnStartClient()
     {
         base.OnStartClient();
-        isLocalPlayer = base.IsOwner;
-
+        _isOwner = base.IsOwner;
         transform.parent = GameManager.Instance.gameCanvas;
+        transform.name = "Player_" + base.OwnerId.ToString();
 
         if (base.IsOwner)
         {
-            GameManager.Instance.player = this;
+            GameManager.Instance.localPlayer = this;
             GameManager.Instance.mainCamera.GetComponent<SmoothCameraFollow>().target = transform;
         }
         else { 
-        
+            GetComponent<PlayerController>().enabled = false;
         }
     }
 
@@ -40,12 +49,13 @@ public class PlayerController : NetworkBehaviour, IDamageable
     void Start()
     {
         playerNetworkSync = GetComponent<PlayerNetworkSync>();
+        currentHealth = maxHealt;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (isLocalPlayer)
+        if (_isReady)
         {
 
             #region KEYBOARD INPUT ACTIONS
@@ -76,12 +86,14 @@ public class PlayerController : NetworkBehaviour, IDamageable
 
             if (Input.GetMouseButtonDown(0))
             {
-                playerNetworkSync.AttackServer(this, true);
+                sword.Attack(true);
+                playerNetworkSync.AttackServer(this, true, TimeManager.Tick);
             }
 
             if (Input.GetMouseButtonUp(0))
             {
-                playerNetworkSync.AttackServer(this, false);
+                sword.Attack(false);
+                playerNetworkSync.AttackServer(this, false, TimeManager.Tick);
             }
 
             Vector3 mousePosition = Input.mousePosition;
@@ -90,11 +102,11 @@ public class PlayerController : NetworkBehaviour, IDamageable
 
             if (mousePosition.x < targetPositionScreenSpace.x)
             {
-                playerNetworkSync.FlipBodyServer(this, -1);
+                body.localScale = new Vector3(-1, 1, 1);
             }
             else
             {
-                playerNetworkSync.FlipBodyServer(this, 1);
+                body.localScale = new Vector3(1, 1, 1);
             }
 
             #endregion
@@ -102,12 +114,33 @@ public class PlayerController : NetworkBehaviour, IDamageable
         }
     }
 
-    public void Takedamage(float value, GameObject gameObject)
+    public void Takedamage(GameObject gameObject, float value)
     {
-        if (gameObject.transform != currentWeapon.transform)
+        if (gameObject.transform != sword.transform)
         {
-            playerNetworkSync.TakeDamageServer(this, value);
+            currentHealth -= value;
+
+            if (currentHealth <= 0)
+            {
+                currentHealth = 0;
+                healthBar.UpdateHealtBarView(currentHealth, maxHealt);
+
+                ResetPlayer();
+                SetPlayerReady(false);
+
+                StartCoroutine(WaitToReaedy());
+            }
+            else 
+            { 
+                healthBar.UpdateHealtBarView(currentHealth, maxHealt);
+            }
         }
+    }
+
+    public void ResetHealth()
+    {
+        currentHealth = maxHealt;
+        healthBar.UpdateHealtBarView(currentHealth, maxHealt);
     }
 
     public void ResetPlayer()
@@ -115,9 +148,9 @@ public class PlayerController : NetworkBehaviour, IDamageable
         GameManager.Instance.spawner.SpawnPlayer(this);
     }
 
-    public void performAttack(bool value)
+    public void performAttack(PlayerController p,bool value, float delay)
     {
-        currentWeapon.Attack(value);
+        sword.AttackPredict(value, delay);
     }
 
     public void PerformFlipBody(int value)
@@ -132,17 +165,17 @@ public class PlayerController : NetworkBehaviour, IDamageable
         }
     }
 
-    public void PerformTakeDamage(float value) 
+    private void SetPlayerReady(bool value) 
     {
-        health.TakeDamage(value);
-        if (health.currentHealth <= 0)
-        {
-            playerNetworkSync.RespawnPlayerServer(this);
-        }
+        _isReady = value;
+        GetComponent<BoxCollider2D>().enabled = _isReady;
     }
 
-    public void PerformRespawn()
+    public IEnumerator WaitToReaedy()
     {
-        ResetPlayer();
+        yield return new WaitForSeconds(2);
+        
+        SetPlayerReady(true);
+        ResetHealth();
     }
 }

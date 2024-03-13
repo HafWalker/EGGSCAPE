@@ -27,7 +27,7 @@ public class GameManager : MonoBehaviour
     public Transform mainCamera;
 
     public Spawner spawner;
-    public PlayerController player;
+    public PlayerController localPlayer;
 
     private void Awake()
     {
@@ -38,17 +38,13 @@ public class GameManager : MonoBehaviour
         else
         {
             _instance = this;
-            DontDestroyOnLoad(gameObject); // Permite que el GameManager persista entre escenas
+            DontDestroyOnLoad(gameObject);
         }
     }
 
-    public void StartGame()
-    {
-        Debug.Log("Game Started!");
+    public void ReSpawnPlayer() 
+    { 
+        spawner.SpawnPlayer(localPlayer);
     }
 
-    public void SpawnPlayer(PlayerController p) 
-    { 
-        spawner.SpawnPlayer(p);
-    }
 }

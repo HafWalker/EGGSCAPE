@@ -22,9 +22,9 @@ public class PlayerNetworkSync : NetworkBehaviour
     }
 
     [ServerRpc]
-    public void AttackServer(PlayerController p, bool value)
+    public void AttackServer(PlayerController p, bool value, uint startTick)
     {
-        Attack(p, value);
+        Attack(p, value, startTick);
     }
 
     [ServerRpc]
@@ -32,41 +32,18 @@ public class PlayerNetworkSync : NetworkBehaviour
     {
         FlipBody(p, value);
     }
-
-    [ServerRpc]
-    public void TakeDamageServer(PlayerController p, float value)
-    {
-        TakeDamange(p, value);
-    }
     
-    [ServerRpc]
-    public void RespawnPlayerServer(PlayerController p)
+    [ObserversRpc(ExcludeOwner = true)]
+    public void Attack(PlayerController p, bool value, uint startTick) 
     {
-        RespawnPlayer(p);
-    }
-
-    [ObserversRpc]
-    public void Attack(PlayerController p, bool value) 
-    {
-        p.performAttack(value);
+        float timeDiff = (float)(TimeManager.Tick - startTick) / TimeManager.TickRate;
+        p.performAttack(p, value, timeDiff);
     }
 
     [ObserversRpc]
     public void FlipBody(PlayerController p, int value)
     {
         p.PerformFlipBody(value);
-    }
-
-    [ObserversRpc]
-    public void TakeDamange(PlayerController p, float value)
-    {
-        p.PerformTakeDamage(value);
-    }
-
-    [ObserversRpc]
-    public void RespawnPlayer(PlayerController p) 
-    {
-        p.PerformRespawn();
     }
 
 }
