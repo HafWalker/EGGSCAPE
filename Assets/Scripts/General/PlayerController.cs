@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using FishNet.Connection;
 using FishNet.Object;
+using System;
 
 public class PlayerController : NetworkBehaviour, IDamageable
 {
@@ -14,9 +15,9 @@ public class PlayerController : NetworkBehaviour, IDamageable
 
     public Transform body;
 
-    public TMP_Text playerName;
-
     private bool isLocalPlayer = true;
+
+    private PlayerNetworkSync playerNetworkSync;
 
     public override void OnStartClient()
     {
@@ -38,7 +39,7 @@ public class PlayerController : NetworkBehaviour, IDamageable
     // Start is called before the first frame update
     void Start()
     {
-
+        playerNetworkSync = GetComponent<PlayerNetworkSync>();
     }
 
     // Update is called once per frame
@@ -46,6 +47,9 @@ public class PlayerController : NetworkBehaviour, IDamageable
     {
         if (isLocalPlayer)
         {
+
+            #region KEYBOARD INPUT ACTIONS
+
             if (Input.GetKey(KeyCode.D))
             {
                 transform.Translate(new Vector3(1, 0, 0) * movementSpeed * Time.deltaTime);
@@ -66,14 +70,18 @@ public class PlayerController : NetworkBehaviour, IDamageable
                 transform.Translate(new Vector3(0, -1, 0) * movementSpeed * Time.deltaTime);
             }
 
+            #endregion
+
+            #region MOUSE INPUT ACTIONS
+
             if (Input.GetMouseButtonDown(0))
             {
-                currentWeapon.Attack(true);
+                playerNetworkSync.AttackServer(this, true);
             }
 
             if (Input.GetMouseButtonUp(0))
             {
-                currentWeapon.Attack(false);
+                playerNetworkSync.AttackServer(this, false);
             }
 
             Vector3 mousePosition = Input.mousePosition;
@@ -82,12 +90,15 @@ public class PlayerController : NetworkBehaviour, IDamageable
 
             if (mousePosition.x < targetPositionScreenSpace.x)
             {
-                body.localScale = new Vector3(-1, 1, 1);
+                playerNetworkSync.FlipBodyServer(this, -1);
             }
             else
             {
-                body.localScale = new Vector3(1, 1, 1);
+                playerNetworkSync.FlipBodyServer(this, 1);
             }
+
+            #endregion
+
         }
     }
 
@@ -95,16 +106,43 @@ public class PlayerController : NetworkBehaviour, IDamageable
     {
         if (gameObject.transform != currentWeapon.transform)
         {
-            health.TakeDamage(value);
-            if (health.currentHealth <= 0)
-            {
-                ResetPlayer();
-            }
+            playerNetworkSync.TakeDamageServer(this, value);
         }
     }
 
     public void ResetPlayer()
     {
         GameManager.Instance.spawner.SpawnPlayer(this);
+    }
+
+    public void performAttack(bool value)
+    {
+        currentWeapon.Attack(value);
+    }
+
+    public void PerformFlipBody(int value)
+    {
+        if (value < 0)
+        {
+            body.localScale = new Vector3(-1, 1, 1);
+        }
+        else
+        {
+            body.localScale = new Vector3(1, 1, 1);
+        }
+    }
+
+    public void PerformTakeDamage(float value) 
+    {
+        health.TakeDamage(value);
+        if (health.currentHealth <= 0)
+        {
+            playerNetworkSync.RespawnPlayerServer(this);
+        }
+    }
+
+    public void PerformRespawn()
+    {
+        ResetPlayer();
     }
 }
